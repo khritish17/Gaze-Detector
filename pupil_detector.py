@@ -3,8 +3,9 @@ import cv2 as cv
 import numpy as np
 
 class PupilDetector:
-    def __init__(self, image_matrix) -> None:
+    def __init__(self, image_matrix, threshold_correction = 10) -> None:
         self.image_matrix = image_matrix
+        self.threshold_correction = threshold_correction
         # converting the image matrix to gray scale
         self.gray_matrix = cv.cvtColor(image_matrix, cv.COLOR_BGR2GRAY)
 
@@ -20,7 +21,7 @@ class PupilDetector:
         for i in range(len(self.gray_matrix)):
             for j in range(len(self.gray_matrix[0])):
                 min_threshold = min(min_threshold, self.gray_matrix[i][j])
-        return min_threshold + 10
+        return min_threshold + self.threshold_correction
     
     def thresholding(self, threshold = 127, maxValue = 255):
         ret, thresh = cv.threshold(self.gray_matrix, threshold, maxValue, cv.THRESH_BINARY)
