@@ -54,33 +54,33 @@ To detect the direction of gaze or focus of a human eye using OpenCV, computer v
  - The credit for the video used in the driver code goes to the video available on YouTube [Link](https://youtu.be/vAgGeLJ37iU)
 
 
-    # open the video file 
-    cap = cv.VideoCapture('1.mp4')
-
-    # create the PupilDetector object
-    PD = PupilDetector()
-
-    # some properties
-    status = True
-    radius = None
-    font = cv.FONT_HERSHEY_SIMPLEX
-    org = (180, 220)
-    fontScale = 1
-    thickness = 2
-    
-    # runs until the video file is opened  
-    while cap.isOpened():
+        # open the video file 
+        cap = cv.VideoCapture('1.mp4')
+        
+        # create the PupilDetector object
+        PD = PupilDetector()
+        
+        # some properties
+        status = True
+        radius = None
+        font = cv.FONT_HERSHEY_SIMPLEX
+        org = (180, 220)
+        fontScale = 1
+        thickness = 2
+        
+        # runs until the video file is opened  
+        while cap.isOpened():
         ret, frame = cap.read()
         # check whether there is any frame to read or not
         if ret:
             (x, y, r), pupil = PD.detect(frame)
-
+        
             # serves the purpose of saving the size of a pupil
             if status:
                 radius = r
                 status = False
-
-            # if the current detected pupil radius is 10 more or less than the original
+        
+            # if the currently detected pupil radius is 10 more or less than the original
             # considered as not pupil
             if abs(r - radius) >= 10:
                 cv.putText(pupil, 'No Pupil', org, font, fontScale, (255, 255, 255), thickness, cv.LINE_AA)
@@ -90,11 +90,11 @@ To detect the direction of gaze or focus of a human eye using OpenCV, computer v
         else:
             break
         
-        # Breaks the while loop when letter 'q' is pressed 
+        # Breaks the while loop when the letter 'q' is pressed 
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
-    cap.release()
-    cv.destroyAllWindows()
+        cap.release()
+        cv.destroyAllWindows()
 
 # Pupil Detector
 
