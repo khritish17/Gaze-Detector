@@ -3,20 +3,34 @@ import cv2 as cv
 import numpy as np
 
 class PupilDetector:
-    def __init__(self, image_matrix, threshold_correction = 10) -> None:
-        self.image_matrix = image_matrix
-        self.threshold_correction = threshold_correction
-        # converting the image matrix to gray scale
-        self.gray_matrix = cv.cvtColor(image_matrix, cv.COLOR_BGR2GRAY)
+    def __init__(self) -> None:
+        pass
 
-    def detect(self):
+    def detect(self, image_matrix, threshold_correction = 10):
+        # the original image matrix in BGR color mode
+        self.image_matrix = image_matrix
+
+        # coverting the BGR image matrix to gray 
+        self.gray_matrix = cv.cvtColor(self.image_matrix, cv.COLOR_BGR2GRAY)
+        self.threshold_correction = threshold_correction
+
+        # threshold value for 
         threshold = self.getMinThreshold()
+
+        # thresholding the gray image
         thresh = self.thresholding(threshold = threshold)
+
+        # finding the contours in the thresholded image
         contours = self.getContours(thresh)
+
+        # the center cordinate and the radius of pupil enclosing minimum circle 
         x, y, radius = self.findPupil(contours)
         return (x, y, radius), self.image_matrix
     
     def getMinThreshold(self):
+        # the pupil is suppose to be the darkest region in the gray image
+        # finding the darkest cell intensity and adding a threshold correction 
+        # for error in colour gradient within the pupil
         min_threshold = 255
         for i in range(len(self.gray_matrix)):
             for j in range(len(self.gray_matrix[0])):
@@ -58,14 +72,43 @@ class PupilDetector:
         # finding it's center co-ordinate (x, y) and its radius  
         (x, y), radius = cv.minEnclosingCircle(second_max[1])
         x, y, radius = int(x), int(y), int(radius)
-        cv.circle(self.image_matrix, (x, y), radius,(0,255,0), 2)
+        cv.circle(self.image_matrix, (x, y), radius,(255,153,153), 2)
         return x, y, radius
 
+# # driver code
+# image = cv.imread("IR.jpg")
+# PD = PupilDetector()
+# (x, y, r), pupil = PD.detect(image)
+# print("x:{}, y:{}, r:{}".format(x, y, r))
+# cv.imshow("final", pupil)
+# cv.waitKey(0)
 
-# driver code
-image = cv.imread("IR.jpg")
-PD = PupilDetector(image)
-(x, y, r), pupil = PD.detect()
-print("x:{}, y:{}, r:{}".format(x, y, r))
-cv.imshow("final", pupil)
-cv.waitKey(0)
+# video driver code
+# pupil video credit: https://youtu.be/vAgGeLJ37iU
+cap = cv.VideoCapture('1.mp4')
+PD = PupilDetector()
+status = True
+radius = None
+font = cv.FONT_HERSHEY_SIMPLEX
+org = (180, 220)
+fontScale = 1
+thickness = 2
+while cap.isOpened():
+    ret, frame = cap.read()
+    # check whether ther is any frame to read or not
+    if ret:
+        (x, y, r), pupil = PD.detect(frame)
+        if status:
+            radius = r
+            status = False
+        if abs(r - radius) >= 10:
+            cv.putText(pupil, 'No Pupil', org, font, fontScale, (255, 255, 255), thickness, cv.LINE_AA)
+        else:
+            cv.putText(pupil, 'Pupil', org, font, fontScale, (255, 255, 255), thickness, cv.LINE_AA)
+        cv.imshow("Pupil detection", pupil)
+    else:
+        break
+    if cv.waitKey(1) & 0xFF == ord('q'):
+        break
+cap.release()
+cv.destroyAllWindows()
